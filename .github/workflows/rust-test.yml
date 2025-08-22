@@ -71,21 +71,22 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ruby-full build-essential
-          # Install common Ruby LSP servers and bundler into the runner user's home
-          # Use --user-install to avoid creating root-owned files that the runner can't modify
-          gem install --user-install --no-document ruby-lsp solargraph bundler
-          # Add Ruby gem binaries to PATH
-          echo "$HOME/.gem/ruby/$(ruby -e 'puts RUBY_VERSION[/^\d+\.\d+/]')/bin" >> $GITHUB_PATH
-          echo "/usr/local/bin" >> $GITHUB_PATH
-          echo "/var/lib/gems/$(ruby -e 'puts RUBY_VERSION[/^\d+\.\d+/]')/bin" >> $GITHUB_PATH
-          solargraph --version || true
+          # Install ruby-lsp and solargraph system-wide so binaries are immediately in PATH
+          # -n /usr/local/bin places executables in /usr/local/bin which is on PATH
+          sudo gem install --no-document -n /usr/local/bin ruby-lsp solargraph bundler
+          # Quick diagnostics
+          ruby -v || true
+          which ruby-lsp || true
           ruby-lsp --version || true
 
       - name: Verify LSP installations are in PATH
         run: |
           echo "Current PATH: $PATH"
+          echo "ls /usr/local/bin:"
+          ls -la /usr/local/bin | head -n 50 || true
           which solargraph || echo "solargraph not found in PATH"
           which ruby-lsp || echo "ruby-lsp not found in PATH"
+          ruby-lsp --version || echo "ruby-lsp --version failed"
 
       - name: Run rust test with LSP
         run: USE_LSP=true cargo test -- --test-threads=1
