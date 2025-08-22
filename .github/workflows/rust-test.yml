@@ -67,20 +67,24 @@ jobs:
 
       - name: Set up local Ruby environment (avoid permission issues)
         run: |
-          echo "export GEM_HOME=$HOME/.gem" >> $GITHUB_ENV
-          echo "export PATH=$HOME/.gem/bin:$PATH" >> $GITHUB_ENV
+          echo "GEM_HOME=$HOME/.gem" >> $GITHUB_ENV
+          echo "PATH=$HOME/.gem/bin:$PATH" >> $GITHUB_ENV
 
       - name: Install Ruby and Ruby LSPs (match Dockerfile)
+        env:
+          GEM_HOME: $HOME/.gem
+          PATH: $HOME/.gem/bin:$PATH
         run: |
           sudo apt-get update
           sudo apt-get install -y ruby-full build-essential
-          # Install ruby-lsp and solargraph into the user's gem home so no system write is required
-          gem install --no-document -n "$HOME/.gem/bin" ruby-lsp solargraph bundler
+          gem install --no-document ruby-lsp solargraph bundler
           ruby -v || true
           which ruby-lsp || true
           ruby-lsp --version || true
 
       - name: Verify LSP installations are in PATH
+        env:
+          PATH: $HOME/.gem/bin:$PATH
         run: |
           echo "Current PATH: $PATH"
           echo "ls $HOME/.gem/bin:"
