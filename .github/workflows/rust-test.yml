@@ -65,40 +65,7 @@ jobs:
           echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
           java -version
 
-      - name: Install Kotlin compiler via SDKMAN (reliable method)
-        run: |
-          # Install SDKMAN for Kotlin installation
-          curl -s "https://get.sdkman.io" | bash
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk install kotlin
-          kotlin -version
-          echo "$HOME/.sdkman/candidates/kotlin/current/bin" >> $GITHUB_PATH
-
-      - name: Install kotlin-language-server (match Dockerfile)
-        run: |
-          set -eux
-
-          sudo mkdir -p /opt/kotlin-language-server
-          mkdir -p /tmp/kls
-          echo "Downloading kotlin-language-server..."
-          curl -fSL --create-dirs -o /tmp/kls/kls.zip "https://github.com/fwcd/kotlin-language-server/releases/latest/download/server.zip"
-          unzip /tmp/kls/kls.zip -d /tmp/kls
-          if [ -d /tmp/kls/server ]; then
-            sudo cp -r /tmp/kls/server/* /opt/kotlin-language-server/
-          else
-            echo "ERROR: /tmp/kls/server directory not found after unzip"; ls -la /tmp/kls; exit 1
-          fi
-          if [ -f /opt/kotlin-language-server/bin/kotlin-language-server ]; then
-            sudo ln -sf /opt/kotlin-language-server/bin/kotlin-language-server /usr/local/bin/kotlin-language-server
-          elif [ -f /opt/kotlin-language-server/kotlin-language-server ]; then
-            sudo ln -sf /opt/kotlin-language-server/kotlin-language-server /usr/local/bin/kotlin-language-server
-          else
-            echo "ERROR: kotlin-language-server executable not found in /opt/kotlin-language-server"; ls -la /opt/kotlin-language-server || true; ls -la /tmp/kls || true; exit 1
-          fi
-          sudo chmod +x /usr/local/bin/kotlin-language-server
-          rm -rf /tmp/kls
-          # Verify kotlin-language-server can run
-          kotlin-language-server --version || echo "Version check failed but continuing"
+  
 
       - name: Install Ruby and Ruby LSPs (match Dockerfile)
         run: |
@@ -117,8 +84,6 @@ jobs:
       - name: Verify LSP installations are in PATH
         run: |
           echo "Current PATH: $PATH"
-          which kotlin || echo "kotlin compiler not found in PATH"
-          which kotlin-language-server || echo "kotlin-language-server not found in PATH"
           which solargraph || echo "solargraph not found in PATH"
           which ruby-lsp || echo "ruby-lsp not found in PATH"
 
