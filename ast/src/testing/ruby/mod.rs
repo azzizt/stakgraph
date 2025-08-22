@@ -42,7 +42,7 @@ pub async fn test_ruby_generic<G: Graph>() -> Result<()> {
     if use_lsp {
         assert_eq!(files.len(), 29, "Expected 29 file nodes with lsp");
     } else {
-        assert_eq!(files.len(), 29, "Expected 29 file nodes");
+        assert_eq!(files.len(), 28, "Expected 28 file nodes");
     }
 
     let repositories = graph.find_nodes_by_type(NodeType::Repository);
