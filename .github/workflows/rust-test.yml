@@ -65,15 +65,17 @@ jobs:
           echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
           java -version
 
-  
+      - name: Set up local Ruby environment (avoid permission issues)
+        run: |
+          echo "export GEM_HOME=$HOME/.gem" >> $GITHUB_ENV
+          echo "export PATH=$HOME/.gem/bin:$PATH" >> $GITHUB_ENV
 
-      
       - name: Install Ruby and Ruby LSPs (match Dockerfile)
         run: |
           sudo apt-get update
           sudo apt-get install -y ruby-full build-essential
-          # Install ruby-lsp and solargraph system-wide so binaries are immediately in PATH
-          sudo gem install --no-document -n /usr/local/bin ruby-lsp solargraph bundler
+          # Install ruby-lsp and solargraph into the user's gem home so no system write is required
+          gem install --no-document -n "$HOME/.gem/bin" ruby-lsp solargraph bundler
           ruby -v || true
           which ruby-lsp || true
           ruby-lsp --version || true
@@ -81,16 +83,11 @@ jobs:
       - name: Verify LSP installations are in PATH
         run: |
           echo "Current PATH: $PATH"
-          echo "ls /usr/local/bin:"
-          ls -la /usr/local/bin | head -n 50 || true
+          echo "ls $HOME/.gem/bin:"
+          ls -la $HOME/.gem/bin || true
           which solargraph || echo "solargraph not found in PATH"
           which ruby-lsp || echo "ruby-lsp not found in PATH"
           ruby-lsp --version || echo "ruby-lsp --version failed"
-
-      - name: Set up local Ruby environment (avoid permission issues)
-        run: |
-          echo "export GEM_HOME=$HOME/.gem" >> $GITHUB_ENV
-          echo "export PATH=$HOME/.gem/bin:$PATH" >> $GITHUB_ENV
 
       - name: Run rust test with LSP
         run: USE_LSP=true cargo test -- --test-threads=1
